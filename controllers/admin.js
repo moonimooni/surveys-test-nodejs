@@ -1,97 +1,101 @@
 const Survey = require("../models/surveys");
 const Question = require("../models/questions");
 const Choice = require("../models/choices");
+const User = require("../models/users");
 
-const multipleChoicesForTypes = {
+const { connectToDatabase } = require("../utils/database");
+
+const {
+  insertManyChoices,
+  insertCreatorInfo,
+} = require("../functions/insert");
+
+const multipleChoicesAvailableTypes = {
   checkbox: true,
   rating: false,
 };
 
 exports.createSurvey = (req, res, next) => {
-  const creatorKey = "XXXXXXXXXXXXXX";
-  const pages = req.body.pages;
+  return connectToDatabase().then(() => {
+    // const creatorKey = req.user;
+    const creatorKey = "XXXXX";
+    const { hasExpiry, closeAt, showResult } = req.body;
+    const pages = req.body.pages;
 
-  pages.forEach((page) => {
-    const questions = page.questions;
-    const questionObjs = [];
+    pages.forEach((page, pagesIdx) => {
+      const pageTitle = page.title;
+      const pageDescription = page.description;
+      const questions = page.questions;
 
-    questions.forEach((question) => {
-      let choiceObjs;
+      const questionObjs = [];
+      const pageObjs = [];
 
-      if (question.type === "rating") {
-        const rateStep = question.rateStep;
+      questions.forEach((question, questionsIdx) => {
+        const { title, description, type, isRequired } = question;
+        let multipleOption;
 
-        const minValue = question.rateMin.value;
-        const maxValue = question.rateMax.value;
-
-        const minText = question.rateMin.text;
-        const maxText = question.rateMax.text;
-
-        const makeChoiceObj = (value) => {
-          return new Choice({
-            value: value,
-            readOnly: true,
-          });
-        };
-
-        choiceObjs = [makeChoiceObj(minText), makeChoiceObj(maxText)];
-
-        let value = minValue;
-
-        while (value <= maxValue) {
-          choiceObjs.push(makeChoiceObj(value));
-          value++;
+        if (
+          multipleChoicesAvailableTypes[type] &&
+          question["multipleChoicesOptions"]["allowed"]
+        ) {
+          const { requireMin, requireMax } = question["multipleChoicesOptions"];
+          multipleOption = {
+            allowed: true,
+            requireMin: requireMin,
+            requireMax: requireMax,
+          };
+        } else {
+          multipleOption = { allowed: false };
         }
-      } else {
-        queston.choices.reduce((acc, val) =>
-          acc.concat([makeChocieObj(val.text)]), []
-        );
-      };
 
-      Choice.insertMany(choiceObjs)
-        .then((result) => {
-          console.log("result: ", result);
-        })
-        .catch((error) => {
-          res.status(400).json({ ERROR: error });
-        });
+        insertManyChoices(question, Choice)
+          .then((result) => {
+            questionObjs.push(
+              new Question({
+                title: title,
+                description: description,
+                typeName: type,
+                isRequired: isRequired,
+                multipleChoicesOption: multipleOption,
+                choices: result,
+              })
+            );
 
-      const { title, description, type, isRequired } = question;
-      let multipleOption;
-
-      if (
-        multipleChoicesForTypes[type] &&
-        question["multipleChoicesOptions"]["allowed"]
-      ) {
-        const { requireMin, requireMax } = question["multipleChoicesOptions"];
-        multipleOption = {
-          allowed: true,
-          requireMin: requireMin,
-          requireMax: requireMax,
-        };
-      } else {
-        multipleOption = { allowed: false };
-      }
-
-      const questionObj = new Question({
-        title: title,
-        description: description,
-        typeName: type,
-        isRequired: isRequired,
-        multipleChoicesOption: multipleOption,
+            if (questionsIdx === questions.length - 1) {
+              Question.insertMany(questionObjs)
+                .then((result) => {
+                  pageObjs.push({
+                    title: pageTitle,
+                    description: pageDescription,
+                    questions: result,
+                  });
+                })
+                .then(() => {
+                  if (pagesIdx === pages.length - 1) {
+                    return Survey.create({
+                      creatorKey: creatorKey,
+                      hasExpiry: hasExpiry,
+                      showResult: showResult,
+                      // closeAt: TODO,
+                      pages: pageObjs,
+                    });
+                  }
+                })
+                .then((result) => {
+                  return insertCreatorInfo(User, result, creatorKey);
+                })
+                .then(() => {
+                  return res.status(201).json({ MESSAGE: "SUCCESS" });
+                })
+                .catch((error) => {
+                  return res.status(400).json({ ERROR: error });
+                });
+            }
+          })
+          .catch((error) => {
+            return status(400).json({ ERROR: error });
+          });
       });
-
-      questionObjs.push(questionObj);
     });
   });
-
-  Question.insertMany(questionObjs)
-    .then((result) => {
-      console.log("result: ", result);
-      return res.status(201).json({ MESSAGE: "SUCCESS" });
-    })
-    .catch((error) => {
-      console.log(error);
-      return res.status(400).json({ ERROR: error });
-    });
 };

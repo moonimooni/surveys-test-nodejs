@@ -3,6 +3,6 @@ const router = express.Router();
 
 const adminRouter = require('../controllers/admin');
 
-router.post('/polls/questions', adminRouter.createSurvey);
+router.post('/survey', adminRouter.createSurvey);
 
 module.exports = router;

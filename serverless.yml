@@ -11,4 +11,4 @@ functions:
     handler: app.handler
     events:
       - http: ANY /
-      - path: /
+      - http: 'ANY {proxy+}'
