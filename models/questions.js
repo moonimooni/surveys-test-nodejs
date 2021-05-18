@@ -19,18 +19,19 @@ const Question = new Schema({
     type: String,
     required: true,
   },
-  multipleChoicesOption: {
+  multipleSelectOption: {
     allowed: {
       type: Boolean,
       required: true,
     },
-    requireMin: Number,
-    requireMax: Number,
+    requiredMin: Number,
+    requiredMax: Number,
   },
   choices: {
     type: Array,
     required: true,
   },
+  labels: Schema.Types.Mixed,
 });
 
 module.exports = mongoose.model("Question", Question);

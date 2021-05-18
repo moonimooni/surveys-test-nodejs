@@ -10,11 +10,6 @@ const {
   insertCreatorInfo,
 } = require("../functions/insert");
 
-const multipleChoicesAvailableTypes = {
-  checkbox: true,
-  rating: false,
-};
-
 exports.createSurvey = (req, res, next) => {
   return connectToDatabase().then(() => {
     // const creatorKey = req.user;
@@ -31,33 +26,17 @@ exports.createSurvey = (req, res, next) => {
       const pageObjs = [];
 
       questions.forEach((question, questionsIdx) => {
-        const { title, description, type, isRequired } = question;
-        let multipleOption;
-
-        if (
-          multipleChoicesAvailableTypes[type] &&
-          question["multipleChoicesOptions"]["allowed"]
-        ) {
-          const { requireMin, requireMax } = question["multipleChoicesOptions"];
-          multipleOption = {
-            allowed: true,
-            requireMin: requireMin,
-            requireMax: requireMax,
-          };
-        } else {
-          multipleOption = { allowed: false };
-        }
-
         insertManyChoices(question, Choice)
           .then((result) => {
             questionObjs.push(
               new Question({
-                title: title,
-                description: description,
-                typeName: type,
-                isRequired: isRequired,
-                multipleChoicesOption: multipleOption,
+                title: question.title,
+                description: question.description,
+                typeName: question.type,
+                isRequired: question.isRequired,
+                multipleSelectOption: question.multipleSelectOption,
                 choices: result,
+                labels: question.labels,
               })
             );
 
@@ -88,11 +67,13 @@ exports.createSurvey = (req, res, next) => {
                   return res.status(201).json({ MESSAGE: "SUCCESS" });
                 })
                 .catch((error) => {
+                  console.log(error);
                   return res.status(400).json({ ERROR: error });
                 });
             }
           })
           .catch((error) => {
+            console.log(error);
             return status(400).json({ ERROR: error });
           });
       });

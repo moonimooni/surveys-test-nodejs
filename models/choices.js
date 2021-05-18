@@ -6,7 +6,7 @@ const Choice = new Schema({
     type: String,
     required: true,
   },
-  subValue: String,
+  index: Number,
   count: {
     type: Number,
     required: true,

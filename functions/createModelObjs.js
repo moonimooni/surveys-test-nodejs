@@ -1,8 +1,8 @@
 const Choice = require("../models/choices");
 
-exports.makeChoiceObj = (value, subValue = null) => {
+exports.makeChoiceObj = (value, index = null) => {
   return new Choice({
     value: value,
-    subValue: subValue,
+    index: index,
   });
 };
