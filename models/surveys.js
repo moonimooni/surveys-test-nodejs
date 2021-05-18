@@ -28,7 +28,10 @@ const Survey = new Schema({
   },
   pages: [
     {
-      _id: Schema.Types.ObjectId,
+      _id: {
+        type: Schema.Types.ObjectId,
+        auto: true
+      },
       title: String,
       description: String,
       questions: [

@@ -5,6 +5,9 @@ provider:
   runtime: nodejs12.x
   stage: dev
   region: ap-northeast-2
+  environment:
+    - MONGO_URI: "mongodb+srv://tester:28Dr6nNUbwERIm14@testcluster.dib6a.mongodb.net/surveys-test?retryWrites=true&w=majority"
+    - SERVER_PORT: "8002"
 
 functions:
   app:

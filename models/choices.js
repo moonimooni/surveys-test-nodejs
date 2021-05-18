@@ -6,11 +6,7 @@ const Choice = new Schema({
     type: String,
     required: true,
   },
-  readOnly: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
+  subValue: String,
   count: {
     type: Number,
     required: true,

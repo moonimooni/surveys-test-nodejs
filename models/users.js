@@ -5,33 +5,38 @@ const User = new Schema({
   userKey: {
     type: String,
     required: true,
+    index: true,
   },
-  createdSurvey: [{
-    surveyId: {
-      type: Schema.Types.ObjectId,
-      ref: "Survey",
-    },
-    createdAt: {
-      type: Date,
-      ref: "Survey.createdAt",
-    },
-  }],
-  votedHistory: [{
-    questionId: {
-      type: Schema.Types.ObjectId,
-      ref: "Question",
-    },
-    choiceIds: [
-      {
+  createdSurvey: [
+    {
+      surveyId: {
         type: Schema.Types.ObjectId,
-        ref: "Choice",
+        ref: "Survey",
       },
-    ],
-    votedAt: {
-      type: Date,
-      default: Date.now(),
+      createdAt: {
+        type: Date,
+        ref: "Survey.createdAt",
+      },
     },
-  }],
+  ],
+  votedHistory: [
+    {
+      questionId: {
+        type: Schema.Types.ObjectId,
+        ref: "Question",
+      },
+      choiceIds: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Choice",
+        },
+      ],
+      votedAt: {
+        type: Date,
+        default: Date.now(),
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", User);
