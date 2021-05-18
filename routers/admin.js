@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const adminRouter = require('../controllers/admin');
+const adminController = require("../controllers/admin");
 
-router.post('/survey', adminRouter.createSurvey);
+router.post("/survey", adminController.createSurvey);
 
 module.exports = router;
