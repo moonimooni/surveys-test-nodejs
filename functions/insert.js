@@ -3,20 +3,15 @@ const { makeChoiceObj } = require("./createModelObjs");
 exports.insertManyChoices = (question, ChoiceModel, objectsArray = []) => {
   if (question.type === "rating") {
     const rateStep = question.rateStep;
+    let { maxRate, minRate } = question;
 
-    let minValue = question.rateMin.value;
-    let maxValue = question.rateMax.value;
+    let indexCount = 0;
 
-    while (minValue <= maxValue) {
-      if (minValue === question.rateMin.value) {
-        objectsArray.push(makeChoiceObj(minValue, question.rateMin.text));
-      } else if (minValue === question.rateMax.value) {
-        objectsArray.push(makeChoiceObj(minValue, question.rateMax.text));
-      } else {
-        objectsArray.push(makeChoiceObj(minValue));
-      }
-      minValue += rateStep;
-    };
+    while (minRate <= maxRate) {
+      objectsArray.push(makeChoiceObj(minRate, indexCount));
+      minRate += rateStep;
+      indexCount ++;
+    }
   } else {
     objectsArray = question.choices.reduce(
       (acc, choice) => acc.concat([makeChoiceObj(choice.text)]),
@@ -33,12 +28,10 @@ exports.insertCreatorInfo = (UserModel, resolveValue, creatorKey) => {
       if (!user) {
         return UserModel.create({
           userKey: creatorKey,
-          createdSurvey: [
-            {
-              surveyId: resolveValue._id,
-              createdAt: resolveValue.createdAt,
-            },
-          ],
+          createdSurvey: [{
+            surveyId: resolveValue._id,
+            createdAt: resolveValue.createdAt,
+          }],
         });
       }
       user.createdSurvey.push({
@@ -48,6 +41,7 @@ exports.insertCreatorInfo = (UserModel, resolveValue, creatorKey) => {
       return user.save();
     })
     .catch((error) => {
+      console.log(error);
       throw new Error(error);
     });
 };
