@@ -16,23 +16,18 @@ exports.insertManyChoices = (question, ChoiceModel, objectsArray = []) => {
         objectsArray.push(makeChoiceObj(minValue));
       }
       minValue += rateStep;
-    }
+    };
   } else {
     objectsArray = question.choices.reduce(
       (acc, choice) => acc.concat([makeChoiceObj(choice.text)]),
       objectsArray
     );
   }
-
   return ChoiceModel.insertMany(objectsArray);
 };
 
-exports.insertUserSurveyCreationHistory = (
-  UserModel,
-  resolveValue,
-  creatorKey
-) => {
-  UserModel.findOne({ userKey: creatorKey })
+exports.insertCreatorInfo = (UserModel, resolveValue, creatorKey) => {
+  return UserModel.findOne({ userKey: creatorKey })
     .exec()
     .then((user) => {
       if (!user) {
