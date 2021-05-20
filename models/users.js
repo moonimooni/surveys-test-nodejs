@@ -25,18 +25,7 @@ const User = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Survey",
       },
-      answers: [
-        {
-          question: {
-            type: Schema.Types.ObjectId,
-            ref: "Question",
-          },
-          choices: [{
-            type: Schema.Types.ObjectId,
-            ref: "Choice",
-          }],
-        },
-      ],
+      responses: Array,
       votedAt: {
         type: Date,
         default: Date.now(),
