@@ -7,10 +7,7 @@ const Question = new Schema({
     required: true,
   },
   imageUrl: String,
-  description: {
-    type: String,
-    required: true,
-  },
+  description: String,
   isRequired: {
     type: Boolean,
     required: true,
@@ -27,10 +24,20 @@ const Question = new Schema({
     requiredMin: Number,
     requiredMax: Number,
   },
-  choices: {
-    type: Array,
-    required: true,
-  },
+  choices: [
+    {
+      value: {
+        type: String,
+        required: true,
+      },
+      index: Number,
+      count: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+    },
+  ],
   labels: Schema.Types.Mixed,
 });
 

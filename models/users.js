@@ -21,14 +21,20 @@ const User = new Schema({
   ],
   votedHistory: [
     {
-      questionId: {
+      surveyId: {
         type: Schema.Types.ObjectId,
-        ref: "Question",
+        ref: "Survey",
       },
-      choiceIds: [
+      answers: [
         {
-          type: Schema.Types.ObjectId,
-          ref: "Choice",
+          question: {
+            type: Schema.Types.ObjectId,
+            ref: "Question",
+          },
+          choices: [{
+            type: Schema.Types.ObjectId,
+            ref: "Choice",
+          }],
         },
       ],
       votedAt: {
