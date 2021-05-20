@@ -12,7 +12,7 @@ const Question = new Schema({
     type: Boolean,
     required: true,
   },
-  typeName: {
+  type: {
     type: String,
     required: true,
   },

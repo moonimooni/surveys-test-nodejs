@@ -1,6 +1,5 @@
 const Survey = require("../models/surveys");
 const Question = require("../models/questions");
-const Choice = require("../models/choices");
 const User = require("../models/users");
 
 const { connectToDatabase } = require("../utils/database");
