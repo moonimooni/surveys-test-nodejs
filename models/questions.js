@@ -7,10 +7,7 @@ const Question = new Schema({
     required: true,
   },
   imageUrl: String,
-  description: {
-    type: String,
-    required: true,
-  },
+  description: String,
   isRequired: {
     type: Boolean,
     required: true,
