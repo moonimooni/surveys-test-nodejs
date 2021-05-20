@@ -26,6 +26,10 @@ const Question = new Schema({
   },
   choices: [
     {
+      _id: {
+        type: Schema.Types.ObjectId,
+        auto: true,
+      },
       value: {
         type: String,
         required: true,
