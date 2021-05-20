@@ -57,47 +57,47 @@ exports.voteSurvey = async (req, res, next) => {
   return res.status(201).json({ MESSAGE: "SUCCESS" });
 };
 
-exports.getSurvey = (req, res, next) => {
-  connectToDatabase().then(() => {
-    const surveyId = req.params.surveyId;
+exports.getSurvey = async (req, res, next) => {
+  await connectToDatabase();
+  const surveyId = req.params.surveyId;
+  const userKey = 'FPFPFPFPFPFP'; // const userKey = req.user;
+  
+  const survey = await Survey.findById(surveyId).exec();
+  if (!survey) {
+    return res.status(404).json({ MESSAGE: "SURVEY NOT FOUND" });
+  }
 
-    Survey.findById(surveyId)
-      .then((survey) => {
-        if (!survey) {
-          return res.status(404).json({ MESSAGE: "SURVEY NOT FOUND" });
-        }
-        survey.pages.forEach((page, pageIdx) => {
-          page.questions.map((questionId, questionIdx) => {
-            return Question.findById(questionId)
-              .then((question) => {
-                console.log("question : ", question);
-                return question;
-              })
-              .then((question) => {
-                page.questions[questionIdx] = question;
-                if (questionIdx === page.questions.length - 1) {
-                  return page;
-                }
-              })
-              .then((modifiedPage) => {
-                survey.pages[pageIdx] = modifiedPage;
-                if (
-                  pageIdx === survey.pages.length - 1 &&
-                  questionIdx === page.questions.length - 1
-                ) {
-                  return res.status(200).json({ survey: survey });
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-                return res.status(400).json({ ERROR: error });
-              });
-          });
+  const user = await User.findOne({userKey: userKey}).exec();
+  
+  const votedHistory = user.votedHistory.filter((history) => {
+    return history.surveyId === surveyId;
+  });
+  if (votedHistory) {
+    return res.status(302).json({MESSAGE: "ALREADY VOTED"});
+  }
+
+  survey.pages.forEach((page, pageIdx) => {
+    page.questions.map((questionId, questionIdx) => {
+      return Question.findById(questionId)
+        .then((question) => {
+          page.questions[questionIdx] = question;
+          if (questionIdx === page.questions.length - 1) {
+            return page;
+          }
+        })
+        .then((modifiedPage) => {
+          survey.pages[pageIdx] = modifiedPage;
+          if (
+            pageIdx === survey.pages.length - 1 &&
+            questionIdx === page.questions.length - 1
+          ) {
+            return res.status(200).json({ survey: survey });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          return res.status(400).json({ ERROR: error });
         });
-      })
-      .catch((error) => {
-        console.log(error);
-        return res.status(400).json({ ERROR: error });
-      });
+    });
   });
 };
