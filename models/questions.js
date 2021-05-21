@@ -30,7 +30,7 @@ const Question = new Schema({
         type: Schema.Types.ObjectId,
         auto: true,
       },
-      value: String,
+      value: Number,
       text: String,
       count: {
         type: Number,
