@@ -39,7 +39,8 @@ const Question = new Schema({
       },
     },
   ],
-  labels: Schema.Types.Mixed,
+  minRateDescription: String,
+  maxRateDescription: String,
 });
 
 module.exports = mongoose.model("Question", Question);

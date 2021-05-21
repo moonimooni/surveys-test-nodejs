@@ -4,8 +4,8 @@ const Survey = require("../models/surveys");
 const Question = require("../models/questions");
 const User = require("../models/users");
 
-const { connectToDatabase } = require("../utils/database");
-const { insertVoterInfo } = require("../functions/insert");
+const { connectToDatabase } = require("../models/utils/connectDB");
+const { insertVoterInfo } = require("./utils/insert");
 
 exports.voteSurvey = async (req, res, next) => {
   await connectToDatabase();
@@ -68,46 +68,22 @@ exports.getSurvey = async (req, res, next) => {
   await connectToDatabase();
   const surveyId = req.params.surveyId;
   const userKey = "FPFPFPFPFPFP"; // const userKey = req.user;
-  const survey = await Survey.findById(surveyId).exec();
-  if (!survey) {
+
+  if (!(await Survey.exists({ _id: surveyId }))) {
     return res.status(404).json({ MESSAGE: "SURVEY NOT FOUND" });
   }
 
+  const survey = await Survey.findById(surveyId).populate("pages.elements");
   const user = await User.findOne({ userKey: userKey }).exec();
 
   if (user) {
-    const votedHistory = user.votedHistory.filter((history) => {
+    const votedSurvey = user.votedSurvey.filter((history) => {
       return history.surveyId === surveyId;
     });
-    if (votedHistory) {
-      return res.status(302).json({ MESSAGE: "ALREADY VOTED" });
+    if (votedSurvey) {
+      return res.status(200).json({ survey: survey, MESSAGE: "ALREADY VOTED" });
     }
   }
 
-  survey.pages.forEach((page, pageIdx) => {
-    page.elements.map((elementId, elementIdx) => {
-      return Question.findById(elementId)
-        .then((element) => {
-          const { labels, ...elementDoc } = { ...element._doc };
-          
-          page.elements[elementIdx] = { ...elementDoc, ...element._doc.labels };
-          if (elementIdx === page.elements.length - 1) {
-            return page;
-          }
-        })
-        .then((modifiedPage) => {
-          survey.pages[pageIdx] = modifiedPage;
-          if (
-            pageIdx === survey.pages.length - 1 &&
-            elementIdx === page.elements.length - 1
-          ) {
-            return res.status(200).json({ survey: survey });
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          return res.status(400).json({ ERROR: error });
-        });
-    });
-  });
+  return res.status(200).json({ survey: survey });
 };

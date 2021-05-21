@@ -1,9 +1,8 @@
 const Survey = require("../models/surveys");
 const Question = require("../models/questions");
 
-const { connectToDatabase } = require("../utils/database");
-
-const { insertCreatorInfo } = require("../functions/insert");
+const { connectToDatabase } = require("../models/utils/connectDB");
+const { insertCreatorInfo } = require("./utils/insert");
 
 exports.createSurvey = async (req, res, next) => {
   await connectToDatabase();
