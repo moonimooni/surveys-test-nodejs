@@ -1,6 +1,5 @@
 const Survey = require("../models/surveys");
 const Question = require("../models/questions");
-const User = require("../models/users");
 
 const { connectToDatabase } = require("../utils/database");
 
@@ -56,7 +55,7 @@ exports.createSurvey = (req, res, next) => {
           }
         })
         .then((survey) => {
-          return insertCreatorInfo(User, survey, creatorKey);
+          return insertCreatorInfo(survey, creatorKey);
         })
         .then(() => {
           return res.status(201).json({ MESSAGE: "SUCCESS" });

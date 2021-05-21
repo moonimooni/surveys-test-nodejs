@@ -5,6 +5,7 @@ const Question = require("../models/questions");
 const User = require("../models/users");
 
 const { connectToDatabase } = require("../utils/database");
+const { insertVoterInfo } = require("../functions/insert");
 
 exports.voteSurvey = async (req, res, next) => {
   await connectToDatabase();
@@ -41,25 +42,13 @@ exports.voteSurvey = async (req, res, next) => {
   const answerObjs = answers.map((answer) => {
     const answerObj = {};
     answerObj["question"] = mongoose.Types.ObjectId(answer.question);
-    answerObj["choices"] = answer.choices.map((choice) => mongoose.Types.ObjectId(choice));
+    answerObj["choices"] = answer.choices.map((choice) =>
+      mongoose.Types.ObjectId(choice)
+    );
     return answerObj;
-  })
+  });
 
-  if (await User.exists({ userKey: voterKey })) {
-    const user = await User.findOne({ userKey: voterKey }).exec();
-    // TODO
-    return res.status(400).json({ MESSAGE: "user already voted" });
-  } else {
-    await User.create({
-      userKey: voterKey,
-      votedHistory: [
-        {
-          surveyId: surveyId,
-          responses: answerObjs,
-        },
-      ],
-    });
-  }
+  await insertVoterInfo(res, voterKey, surveyId, answerObjs);
 
   for await (let answer of answers) {
     const question = await Question.findById(answer.question).exec();
