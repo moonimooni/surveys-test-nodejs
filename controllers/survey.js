@@ -85,11 +85,13 @@ exports.getSurvey = async (req, res, next) => {
   }
 
   survey.pages.forEach((page, pageIdx) => {
-    page.questions.map((questionId, questionIdx) => {
-      return Question.findById(questionId)
-        .then((question) => {
-          page.questions[questionIdx] = question;
-          if (questionIdx === page.questions.length - 1) {
+    page.elements.map((elementId, elementIdx) => {
+      return Question.findById(elementId)
+        .then((element) => {
+          const { labels, ...elementDoc } = { ...element._doc };
+          
+          page.elements[elementIdx] = { ...elementDoc, ...element._doc.labels };
+          if (elementIdx === page.elements.length - 1) {
             return page;
           }
         })
@@ -97,7 +99,7 @@ exports.getSurvey = async (req, res, next) => {
           survey.pages[pageIdx] = modifiedPage;
           if (
             pageIdx === survey.pages.length - 1 &&
-            questionIdx === page.questions.length - 1
+            elementIdx === page.elements.length - 1
           ) {
             return res.status(200).json({ survey: survey });
           }
