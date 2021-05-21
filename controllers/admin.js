@@ -4,66 +4,64 @@ const Question = require("../models/questions");
 const { connectToDatabase } = require("../utils/database");
 
 const { insertCreatorInfo } = require("../functions/insert");
-const { modifyRatingChoices } = require("../functions/modifyByQuestionType");
 
-exports.createSurvey = (req, res, next) => {
-  return connectToDatabase().then(() => {
-    // const creatorKey = req.user;
-    const creatorKey = "XXXXX";
-    const { hasExpiry, closeAt, showResult } = req.body;
-    const pages = req.body.pages;
+exports.createSurvey = async (req, res, next) => {
+  await connectToDatabase();
+  const creatorKey = "AWERASDFASDF";
+  const { hasExpiry, closeAt, isPublic } = req.body;
+  const pages = req.body.pages;
 
-    pages.forEach((page, pagesIdx) => {
-      const pageTitle = page.title;
-      const pageDescription = page.description;
-      const questions = page.questions;
+  pages.forEach((page, pagesIdx) => {
+    const pageTitle = page.title;
+    const pageDescription = page.description;
+    const elements = page.elements;
 
-      const pageObjs = [];
-
-      questions.map((question) => {
-        if (question.type === "rating") {
-          question = modifyRatingChoices(question);
+    elements.map((question) => {
+      if (question.type === "rating") {
+        question.labels = {
+          minRateDescription: question.minRateDescription,
+          maxRateDescription: question.maxRateDescription,
         };
-        return new Question({
-          title: question.title,
-          description: question.description,
-          typeName: question.type,
-          isRequired: question.isRequired,
-          multipleSelectOption: question.multipleSelectOption,
-          choices: question.choices,
-          labels: question.labels,          
-        });
+      }
+      return new Question({
+        title: question.title,
+        description: question.description,
+        typeName: question.type,
+        isRequired: question.isRequired,
+        multipleSelectOption: question.multipleSelectOption,
+        elements: question.elements,
+        labels: question.labels,
       });
-
-      Question.insertMany(questions)
-        .then((result) => {
-          pageObjs.push({
-            title: pageTitle,
-            description: pageDescription,
-            questions: result,
-          });
-        })
-        .then(() => {
-          if (pagesIdx === pages.length - 1) {
-            return Survey.create({
-              creatorKey: creatorKey,
-              hasExpiry: hasExpiry,
-              showResult: showResult,
-              // closeAt: TODO,
-              pages: pageObjs,
-            });
-          }
-        })
-        .then((survey) => {
-          return insertCreatorInfo(survey, creatorKey);
-        })
-        .then(() => {
-          return res.status(201).json({ MESSAGE: "SUCCESS" });
-        })
-        .catch((error) => {
-          console.log(error);
-          return res.status(400).json({ ERROR: error });
-        });
     });
+
+    const pageObjs = [];
+
+    Question.insertMany(elements)
+      .then((result) => {
+        pageObjs.push({
+          title: pageTitle,
+          description: pageDescription,
+          elements: result,
+        });
+        if (pagesIdx === pages.length - 1) {
+          return Survey.create({
+            creatorKey: creatorKey,
+            hasExpiry: hasExpiry,
+            isPublic: isPublic,
+            // closeAt: TODO,
+            pages: pageObjs,
+          });
+        }
+      })
+      .then((survey) => {
+        return insertCreatorInfo(survey, creatorKey);
+      })
+      .then(() => {
+        return res.status(201).json({ MESSAGE: "SUCCESS" });
+      })
+      .catch((error) => {
+        console.log(error);
+        return res.status(400).json({ ERROR: error });
+      });
   });
 };
