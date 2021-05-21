@@ -24,20 +24,14 @@ const Question = new Schema({
     requiredMin: Number,
     requiredMax: Number,
   },
-  elements: [
+  choices: [
     {
       _id: {
         type: Schema.Types.ObjectId,
         auto: true,
       },
-      value: {
-        type: String,
-        required: true,
-      },
-      text: {
-        type: String,
-        required: true,
-      },
+      value: String,
+      text: String,
       count: {
         type: Number,
         required: true,
@@ -45,6 +39,7 @@ const Question = new Schema({
       },
     },
   ],
+  labels: Schema.Types.Mixed,
 });
 
 module.exports = mongoose.model("Question", Question);
