@@ -34,7 +34,7 @@ const Survey = new Schema({
       },
       title: String,
       description: String,
-      questions: [
+      elements: [
         {
           type: Schema.Types.ObjectId,
           ref: "Question",
