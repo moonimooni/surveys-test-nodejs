@@ -5,6 +5,7 @@ const User = require("../models/users");
 const { connectToDatabase } = require("../utils/database");
 
 const { insertCreatorInfo } = require("../functions/insert");
+const { modifyRatingChoices } = require("../functions/modifyByQuestionType");
 
 exports.createSurvey = (req, res, next) => {
   return connectToDatabase().then(() => {
@@ -19,9 +20,11 @@ exports.createSurvey = (req, res, next) => {
       const questions = page.questions;
 
       const pageObjs = [];
-      const questionObjs = [];
 
       questions.map((question) => {
+        if (question.type === "rating") {
+          question = modifyRatingChoices(question);
+        };
         return new Question({
           title: question.title,
           description: question.description,
