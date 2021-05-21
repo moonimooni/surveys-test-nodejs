@@ -27,29 +27,27 @@ exports.insertCreatorInfo = (resolveValue, creatorKey) => {
     });
 };
 
-exports.insertVoterInfo = async (res, voterKey, surveyId, answerObjs) => {
+exports.insertVoterInfo = async (voterKey, surveyId, responseObjs) => {
   if (await User.exists({ userKey: voterKey })) {
     const user = await User.findOne({ userKey: voterKey }).exec();
-    const voted = user.votedHistory.filter((history) => {
+    const voted = user.votedSurvey.filter((history) => {
       return String(history.surveyId) === surveyId;
     });
-    if (voted.length)
-      return res.status(400).json({ MESSAGE: "user already voted" });
-    else {
-      user.votedHistory.push({
-        surveyId: surveyId,
-        responses: answerObjs,
-      });
-      user.save();
-    }
-    // TODO
+
+    if (voted.length) return false;
+
+    user.votedSurvey.push({
+      surveyId: surveyId,
+      responses: responseObjs,
+    });
+    user.save();
   } else {
-    await User.create({
+    return await User.create({
       userKey: voterKey,
-      votedHistory: [
+      votedSurvey: [
         {
           surveyId: surveyId,
-          responses: answerObjs,
+          responses: responseObjs,
         },
       ],
     });

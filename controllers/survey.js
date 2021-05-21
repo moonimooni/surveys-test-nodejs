@@ -6,55 +6,40 @@ const User = require("../models/users");
 
 const { connectToDatabase } = require("../models/utils/connectDB");
 const { insertVoterInfo } = require("./utils/insert");
+const { missingElements } = require("./utils/filter");
 
 exports.voteSurvey = async (req, res, next) => {
   await connectToDatabase();
   const surveyId = req.params.surveyId;
-  const { answers } = req.body;
-  // const voterKey = req.user;
-  const voterKey = "fffffffffff";
+  const { responses } = req.body;
+  const voterKey = "XLXLXLXLXLXL"; // const voterKey = req.user;
   const survey = await Survey.findById(surveyId)
-    .populate("pages.questions")
+    .populate("pages.elements")
     .exec();
 
-  let mustQuestionsAll = [];
-
-  survey.pages.forEach((page) => {
-    page.questions.forEach((question) => {
-      if (question.isRequired) {
-        mustQuestionsAll.push(String(question._id));
-      }
-    });
-  });
-
-  const answeredQuestions = answers.map((answer) => answer.question);
-
-  const missedQuestion = mustQuestionsAll.filter((question) => {
-    return !answeredQuestions.includes(question);
-  });
-
-  if (missedQuestion.length) {
+  if (missingElements(survey, responses)) {
     return res
       .status(400)
       .json({ MESSAGE: "some neccessary questions missing." });
   }
 
-  const answerObjs = answers.map((answer) => {
-    const answerObj = {};
-    answerObj["question"] = mongoose.Types.ObjectId(answer.question);
-    answerObj["choices"] = answer.choices.map((choice) =>
-      mongoose.Types.ObjectId(choice)
-    );
-    return answerObj;
-  });
+  const insertVoterResult = await insertVoterInfo(
+    voterKey,
+    surveyId,
+    responses
+  );
 
-  await insertVoterInfo(res, voterKey, surveyId, answerObjs);
+  if (!insertVoterResult)
+    return res.status(400).json({ MESSAGE: "ALREADY VOTED" });
 
-  for await (let answer of answers) {
-    const question = await Question.findById(answer.question).exec();
+  for await (let response of responses) {
+    const question = await Question.findById(response.questionId)
+      .select("choices")
+      .exec();
+
     question.choices.map((choice) => {
       const choiceId = String(choice._id);
-      if (answer.choices.includes(choiceId)) {
+      if (response.choiceIds.includes(choiceId)) {
         choice.count++;
       }
       return choice;
