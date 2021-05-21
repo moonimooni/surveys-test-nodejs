@@ -24,7 +24,7 @@ const Question = new Schema({
     requiredMin: Number,
     requiredMax: Number,
   },
-  choices: [
+  elements: [
     {
       _id: {
         type: Schema.Types.ObjectId,
