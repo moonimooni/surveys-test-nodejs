@@ -1,4 +1,4 @@
-const User = require("../models/users");
+const User = require("../../models/users");
 
 exports.insertCreatorInfo = (resolveValue, creatorKey) => {
   return User.findOne({ userKey: creatorKey })
