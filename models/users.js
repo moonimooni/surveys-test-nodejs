@@ -19,7 +19,7 @@ const User = new Schema({
       },
     },
   ],
-  votedHistory: [
+  votedSurvey: [
     {
       surveyId: {
         type: Schema.Types.ObjectId,

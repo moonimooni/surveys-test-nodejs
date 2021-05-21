@@ -22,7 +22,7 @@ const Survey = new Schema({
   closeAt: {
     type: Date,
   },
-  showResult: {
+  isPublic: {
     type: Boolean,
     required: true,
   },

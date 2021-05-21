@@ -34,7 +34,10 @@ const Question = new Schema({
         type: String,
         required: true,
       },
-      index: Number,
+      text: {
+        type: String,
+        required: true,
+      },
       count: {
         type: Number,
         required: true,
@@ -42,7 +45,6 @@ const Question = new Schema({
       },
     },
   ],
-  labels: Schema.Types.Mixed,
 });
 
 module.exports = mongoose.model("Question", Question);
